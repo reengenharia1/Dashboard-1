@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Etapas Regulatórias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="https://unpkg.com/lucide@0.468.0" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="header">
+      <div class="header__brand">
+        <div class="header__logo" aria-hidden="true">
+          <i data-lucide="layout-dashboard"></i>
+        </div>
+        <div class="header__titles">
+          <h1>Dashboard de Etapas Regulatórias</h1>
+          <p>Acompanhamento de processos e etapas</p>
+        </div>
+      </div>
+
+      <form class="filters" id="filters" aria-label="Filtros do dashboard">
+        <label class="filter">
+          <span>Status</span>
+          <select id="filter-status" name="status">
+            <option value="">Todos</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span>Concessionária</span>
+          <select id="filter-concessionaria" name="concessionaria">
+            <option value="">Todas</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span>Modo de Transporte</span>
+          <select id="filter-modo" name="modo">
+            <option value="">Todos</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span>Etapa Atual</span>
+          <select id="filter-etapa" name="etapa">
+            <option value="">Todas</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span>Status da Etapa</span>
+          <select id="filter-status-etapa" name="statusEtapa">
+            <option value="">Todos</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span>Prioridade</span>
+          <select id="filter-prioridade" name="prioridade">
+            <option value="">Todas</option>
+          </select>
+        </label>
+        <button type="button" class="btn-clear" id="btn-clear">
+          <i data-lucide="filter-x"></i>
+          <span>Limpar filtros</span>
+        </button>
+      </form>
+    </header>
+
+    <div class="loading" id="loading" role="status" aria-live="polite">
+      <div class="loading__spinner"></div>
+      <p>Carregando dados…</p>
+      <div class="skeleton-grid" aria-hidden="true">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </div>
+
+    <div class="empty-state" id="empty-state" hidden>
+      <i data-lucide="inbox"></i>
+      <h2>Nenhum processo encontrado</h2>
+      <p>Ajuste ou limpe os filtros para visualizar os dados.</p>
+      <button type="button" class="btn-clear" id="btn-clear-empty">Limpar filtros</button>
+    </div>
+
+    <main class="dashboard" id="dashboard" hidden>
+      <section class="kpi-row" aria-label="Indicadores">
+        <article class="kpi kpi--teal" data-kpi="total">
+          <div class="kpi__icon"><i data-lucide="files"></i></div>
+          <div class="kpi__body">
+            <span class="kpi__label">Total de Processos</span>
+            <strong class="kpi__value" data-count="0">0</strong>
+          </div>
+        </article>
+        <article class="kpi kpi--blue" data-kpi="andamento">
+          <div class="kpi__icon"><i data-lucide="loader"></i></div>
+          <div class="kpi__body">
+            <span class="kpi__label">Em Andamento</span>
+            <strong class="kpi__value" data-count="0">0</strong>
+          </div>
+        </article>
+        <article class="kpi kpi--green" data-kpi="concluido">
+          <div class="kpi__icon"><i data-lucide="check-circle-2"></i></div>
+          <div class="kpi__body">
+            <span class="kpi__label">Concluído</span>
+            <strong class="kpi__value" data-count="0">0</strong>
+          </div>
+        </article>
+        <article class="kpi kpi--orange" data-kpi="naoIniciado">
+          <div class="kpi__icon"><i data-lucide="circle-dashed"></i></div>
+          <div class="kpi__body">
+            <span class="kpi__label">Não Iniciado</span>
+            <strong class="kpi__value" data-count="0">0</strong>
+          </div>
+        </article>
+        <article class="kpi kpi--red" data-kpi="arquivado">
+          <div class="kpi__icon"><i data-lucide="archive"></i></div>
+          <div class="kpi__body">
+            <span class="kpi__label">Arquivado</span>
+            <strong class="kpi__value" data-count="0">0</strong>
+          </div>
+        </article>
+        <article class="kpi kpi--indigo" data-kpi="concessionarias">
+          <div class="kpi__icon"><i data-lucide="building-2"></i></div>
+          <div class="kpi__body">
+            <span class="kpi__label">Concessionárias</span>
+            <strong class="kpi__value" data-count="0">0</strong>
+          </div>
+        </article>
+        <article class="kpi kpi--green" data-kpi="pctConcluidos">
+          <div class="kpi__icon"><i data-lucide="percent"></i></div>
+          <div class="kpi__body">
+            <span class="kpi__label">% Concluídos</span>
+            <strong class="kpi__value" data-count="0" data-suffix="%">0%</strong>
+          </div>
+        </article>
+      </section>
+
+      <section class="charts" aria-label="Gráficos">
+        <article class="panel panel--donut">
+          <h2 class="panel__title">Status dos Processos</h2>
+          <div class="panel__chart">
+            <canvas id="chart-status" aria-label="Donut de status dos processos"></canvas>
+          </div>
+        </article>
+
+        <article class="panel panel--bars">
+          <h2 class="panel__title">Top 8 Concessionárias</h2>
+          <div class="panel__chart">
+            <canvas id="chart-top-conc" aria-label="Barras horizontais top concessionárias"></canvas>
+          </div>
+        </article>
+
+        <article class="panel panel--priority">
+          <h2 class="panel__title">Prioridade</h2>
+          <div class="panel__chart">
+            <canvas id="chart-prioridade" aria-label="Barras de prioridade"></canvas>
+          </div>
+        </article>
+
+        <article class="panel panel--etapas">
+          <h2 class="panel__title">Top Etapas Atuais</h2>
+          <div class="panel__chart">
+            <canvas id="chart-etapas" aria-label="Colunas top etapas atuais"></canvas>
+          </div>
+        </article>
+
+        <article class="panel panel--status-etapa">
+          <h2 class="panel__title">Status da Etapa</h2>
+          <div class="panel__chart">
+            <canvas id="chart-status-etapa" aria-label="Barras status da etapa"></canvas>
+          </div>
+        </article>
+      </section>
+
+      <section class="extra-slot" id="extra-slot" aria-label="Regulatório e descrições">
+        <article class="panel panel--extra">
+          <div class="panel__head">
+            <h2 class="panel__title">SEI Regulatório × Descrição</h2>
+            <span class="panel__meta" id="extra-slot-meta">—</span>
+          </div>
+          <div class="extra-slot__body" id="extra-slot-body" role="list"></div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span id="footer-info">—</span>
+    </footer>
+  </div>
+</body>
+</html>
